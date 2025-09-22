@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: tjorge-l < tjorge-l@student.42lisboa.co    +#+  +:+       +#+         #
+#    By: tjorge-l <tjorge-l@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/09/08 16:39:48 by tjorge-l          #+#    #+#              #
-#    Updated: 2025/09/16 16:23:48 by tjorge-l         ###   ########.fr        #
+#    Updated: 2025/09/22 10:40:40 by tjorge-l         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ RM = rm -rf
 DEBUG_FLAGS = -g
 VFLAGS = -s --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes
 
-SRCS = main.cpp
+SRCS = main.cpp BitcoinExchange.cpp
 
 OBJS = $(SRCS:%.cpp=%.o)
 
