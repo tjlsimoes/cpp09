@@ -1,53 +1,51 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: tjorge-l <tjorge-l@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/09/08 16:39:48 by tjorge-l          #+#    #+#              #
-#    Updated: 2025/09/22 10:40:40 by tjorge-l         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+################################################################################
+#                                    CONFIGS                                   #
+################################################################################
 
-NAME = btc
-
-CCXX = c++
-CXXFLAGS = -std=c++98 -Wall -Wextra -Werror
+NAME =	btc
+FLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address -I.
+CC = c++
 RM = rm -rf
 
-DEBUG_FLAGS = -g
-VFLAGS = -s --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes
+################################################################################
+#                                 PROGRAM'S SRCS                               #
+################################################################################
 
 SRCS = main.cpp BitcoinExchange.cpp
+OBJS_D = objs
+OBJS = $(SRCS:.cpp=.o)
 
-OBJS = $(SRCS:%.cpp=%.o)
+################################################################################
+#                                  Makefile  objs                              #
+################################################################################
 
+WHITE	= \033[1;37m
+BLACK	= \033[1;30m
+RED		= \033[1;31m
+YELLOW	= \033[1;33m
+BLUE	= \033[1;34m
+GREEN	= \033[1;32m
+DEFAULT = \033[0m
+
+
+%.o:%.cpp
+	$(CC) $(FLAGS) -o $@ -c $<
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(LIBFT)
-	$(CCXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
+$(NAME): $(OBJS)
+	@echo "$(BLUE)Compiling $(YELLOW)$(NAME)$(BLUE) . . . . . . .$(DEFAULT)"
+	@$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+	@echo "$(GREEN)Successfully built --> $(YELLOW)$(NAME)$(DEFAULT)"
 
-%.o: %.cpp
-	$(CCXX) $(CXXFLAGS) -c $< -o $@
-
-clean:
-	$(RM) $(OBJS)
+clean: 
+	@$(RM) $(OBJS)
+	@echo "$(YELLOW)OBJECTS $(RED)REMOVED$(DEFAULT)"
 
 fclean: clean
-	$(RM) $(NAME)
+	@$(RM) $(NAME)
+	@echo "$(YELLOW)$(NAME) $(RED)REMOVED$(DEFAULT)"
 
 re: fclean all
 
-run: $(NAME)
-	valgrind $(VFLAGS) ./$(NAME)
-
-debug: CXXFLAGS = -g -Wall -Wextra -Werror
-debug: $(OBJS)
-	$(CC) $(CXXFLAGS) $(OBJS) -o $(NAME)
-
-rdebug: debug
-	valgrind $(VFLAGS) ./$(NAME)
-
-.PHONY: all clean fclean re
+.PHONY: all clean re fclean

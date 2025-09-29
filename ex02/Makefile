@@ -2,8 +2,8 @@
 #                                    CONFIGS                                   #
 ################################################################################
 
-NAME =	RPN
-FLAGS = -Wall -Wextra -Werror -std=c++98 -I. -g #-fsanitize=address 
+NAME =	PmergeMe
+FLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address -I.
 CC = c++
 RM = rm -rf
 
@@ -11,7 +11,7 @@ RM = rm -rf
 #                                 PROGRAM'S SRCS                               #
 ################################################################################
 
-SRCS = main.cpp RPN.cpp
+SRCS = main.cpp PmergeMe.cpp
 OBJS_D = objs
 OBJS = $(SRCS:.cpp=.o)
 
