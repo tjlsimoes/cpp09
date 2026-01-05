@@ -1,177 +1,161 @@
 #include "BitcoinExchange.hpp"
 
-BitcoinExchange::BitcoinExchange()
+BitcoinExchange::BitcoinExchange() : _inputFilename("")
+{}
+
+BitcoinExchange::BitcoinExchange(const std::string & inputFilename) : _inputFilename(inputFilename)
 {
-	try
-	{
-		file_readable(data, (char *)"data.csv");
-		file_readable(user_file, (char *)"user_input.csv");
-		db = gen_db(data);
-	}
-	catch(const std::exception& e)
-	{
-		throw std::exception();
-	}
+	_loadDatabase();
 }
 
-BitcoinExchange::BitcoinExchange(char *file_path)
-{
-	try
-	{
-		file_readable(data, (char *)"data.csv");
-		file_readable(user_file, file_path);
-		db = gen_db(data);
-	}
-	catch(const std::exception& e)
-	{
-		throw std::exception();
-	}
-}
+BitcoinExchange::BitcoinExchange(const BitcoinExchange & other) : _inputFilename(other._inputFilename), _database(other._database)
+{}
 
 BitcoinExchange::~BitcoinExchange()
+{}
+
+void	BitcoinExchange::run() const
 {
-	data.close();
-	user_file.close();
+	if (_inputFilename.empty())
+	{
+		std::cerr << "Error: no input file provided." << std::endl;
+		return ;
+	}
+	_processInput();
 }
 
-
-void	BitcoinExchange::file_readable(std::fstream & user_file, char *file_path)
+std::string	BitcoinExchange::_trim(const std::string &str)
 {
-	user_file.open(file_path, std::ios::in);
-	if (user_file.fail())
-	{
-		std::cerr << "Unable to open file: " << file_path << std::endl;
-		throw std::exception();
-	}
+	size_t	first = str.find_first_not_of(" \t");
+	if (first == std::string::npos)
+		return "";
+	size_t last = str.find_last_not_of(" \t");
+	return str.substr(first, last - first + 1);
 }
 
-bool	BitcoinExchange::invalid_date(std::vector<int> &date)
+void	BitcoinExchange::_loadDatabase()
 {
-	if (date[1] > 12
-		|| date[2] > 31
-		|| (date[1] == 2 && date[2] > 29)
-		|| (date[1] == 4 && date[2] > 30)
-		|| (date[1] == 6 && date[2] > 30)
-		|| (date[1] == 9 && date[2] > 30)
-		|| (date[1] == 11 && date[2] > 30))
-		return true;
-	return false;
+	std::ifstream	file("data.csv");
+	if (!file.is_open())
+		throw std::runtime_error("could not open data.csv");
+
+	std::string	line;
+	std::getline(file, line); // skip header
+
+	while(std::getline(file, line))
+	{
+		size_t commaPos = line.find(',');
+		if (commaPos == std::string::npos)
+			continue ;
+		std::string date = _trim(line.substr(0, commaPos));
+		std::string priceStr = _trim(line.substr(commaPos + 1));
+
+		float price = static_cast<float>(std::atof(priceStr.c_str()));
+		_database.push_back(std::make_pair(date, price));
+	}
+	file.close();
 }
 
-
-bool	BitcoinExchange::validate_date(std::string &date)
+bool	BitcoinExchange::_isValidDate(const std::string &date) const
 {
-	std::vector<int>	date_int;
-	std::string			nbr_str;
-	std::stringstream	s(date);
+	std::stringstream ss(date);
+	int year, month, day;
+	char sep1, sep2;
 
-	while (std::getline(s, nbr_str, '-'))
-	{
-		date_int.push_back(std::atoi(nbr_str.c_str()));
-		nbr_str.clear();
-	}
-	if (date_int.empty() || date_int.size() != 3 || invalid_date(date_int))
-	{
-		std::cerr
-		<< "Error: bad input =>"
-		<< date
-		<< std::endl;
-		return (false);
-	}
-	return (true);
+	if (!(ss >> year >> sep1 >> month >> sep2 >> day) 
+		|| sep1 != '-' || sep2 != '-' 
+		|| !ss.eof())
+		return false;
+
+	if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31)
+		return false;
+	
+	if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
+		return false;
+	if (month == 2 && day > 29)
+		return false;
+
+	(void)year;
+	return true;
 }
 
-bool	BitcoinExchange::validate_price(std::string &price)
+bool	BitcoinExchange::_isValidValue(const std::string & valueStr, float &value) const
 {
-	long long price_long = std::atof(price.c_str());
-	if (price_long < 0)
+	char	*endptr;
+	value = static_cast<float>(std::strtod(valueStr.c_str(), &endptr));
+
+	if (endptr == valueStr.c_str() || *endptr != '\0')
 	{
-		std::cerr
-		<< "Error: not a positive number."
-		<< std::endl;
-		return (false);
+		std::cerr << "Error: not a valid number." << std::endl;
+		return false;
 	}
-	else if (price_long > 1000)
+	if (value < 0)
 	{
-		std::cerr
-		<< "Error: too large a number."
-		<< std::endl;
-		return (false);
+		std::cerr << "Error: not a positive number." << std::endl;
+		return false;
 	}
-	return (true);
+	if (value > 1000)
+	{
+		std::cerr << "Error: too large a number." << std::endl;
+		return false;
+	}
+	return true;
 }
 
-
-float	BitcoinExchange::get_price(std::vector<std::vector<std::string> > db, std::string &date)
+float	BitcoinExchange::_findClosestPrice(const std::string & targetDate) const
 {
-	for (size_t i = 0; i < db.size(); i++)
+	std::list<std::pair<std::string, float> >::const_iterator it;
+	std::list<std::pair<std::string, float> >::const_iterator best = _database.end();
+
+	for (it = _database.begin(); it != _database.end(); it++)
 	{
-		if (db[i][0].substr(0, 7) == date.substr(0, 7))
+		if (it->first > targetDate)
+			break ;
+		best = it;
+	}
+	return best->second;	
+}
+
+void	BitcoinExchange::_processInput() const
+{
+	std::ifstream	input(_inputFilename.c_str());
+	if (!input.is_open())
+	{
+		std::cerr << "Error: could not open file." << std::endl;
+		return ;
+	}
+
+	std::string line;
+	std::getline(input, line);	// Skip header
+
+	while (std::getline(input, line))
+	{
+		size_t	pipePos = line.find('|');
+		if (pipePos == std::string::npos)
 		{
-			while (true)
-			{
-				if (atoi(db[i][0].substr(8, 2).c_str()) == atoi(date.substr(8, 2).c_str()))
-					return (std::atof(db[i][1].c_str()));
-				else if (i + 1 == db.size())
-					return (std::atof(db[i][1].c_str()));
-				else if (atoi(db[i + 1][0].substr(8, 2).c_str()) > atoi(date.substr(8, 2).c_str()))
-					return (std::atof(db[i][1].c_str()));
-				i++;
-			}
-		}
-	}
-	return (-1.0);
-}
-
-void	BitcoinExchange::read_line()
-{
-	std::vector<std::string>	row;
-	std::string					temp;
-	std::string					word;
-
-	std::getline(user_file, temp);
-
-	while (std::getline(user_file, temp))
-	{
-		row.clear();
-		std::cout << temp << std::endl; ///
-
-		std::stringstream	s(temp);
-
-		while (std::getline(s, word, '|'))
-			row.push_back(word);
-
-		// std::cout << "|" << row[0] << "|" << std::endl;
-		if (row.size() != 2 || row[0].size() < 10)		// Check this again
-		{
-			std::cerr << "Error: bad input => " << row[0] <<std::endl;
+			std::cerr << "Error: bad input => " << line << std::endl;
 			continue ;
 		}
-		if (!validate_date(row[0]) || !validate_price(row[1]))
+
+		std::string	dateStr = _trim(line.substr(0, pipePos));
+		std::string valueStr = _trim(line.substr(pipePos + 1));
+		if (dateStr.empty() || valueStr.empty())
+		{
+			std::cerr << "Error: bad input => " << line << std::endl;
 			continue ;
-		
-		std::cout << row[0] << " => " << row[1] << " = "
-		<< get_price(db, row[0]) * std::atof(row[1].c_str())
-		<< std::endl;
+		}
+		if (!_isValidDate(dateStr))
+		{
+			std::cerr << "Error: bad input => " << dateStr << std::endl;
+			continue ;
+		}
+
+		float value;
+		if (!_isValidValue(valueStr, value))
+			continue ;
+
+		float rate = _findClosestPrice(dateStr);
+		std::cout << dateStr << " => " << value << " = " << (value * rate) << std::endl;
 	}
-}
-
-std::vector<std::vector<std::string> > BitcoinExchange::gen_db(std::fstream & data)
-{
-	std::vector<std::vector<std::string> > db;
-	std::vector<std::string>	row;
-	std::string					temp;
-	std::string					word;
-
-	std::getline(data, temp);
-
-	while (std::getline(data, temp))
-	{
-		row.clear();
-		std::stringstream	s(temp);
-		while (std::getline(s, word, ','))
-			row.push_back(word);
-		db.push_back(row);
-	}
-	return (db);
+	input.close();
 }

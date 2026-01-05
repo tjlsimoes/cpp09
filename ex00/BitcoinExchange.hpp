@@ -1,33 +1,36 @@
 #ifndef BITCOIN_EXCHANGE_HPP
 # define BITCOIN_EXCHANGE_HPP
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <cstdlib>
-#include <sstream>
+#include <list>
 #include <string>
+#include <utility>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <cstdlib>
 
 class BitcoinExchange
 {
 	private:
-		std::fstream							user_file;
-		std::fstream							data;
-		std::vector<std::vector<std::string> >	db;
+		std::string									_inputFilename;
+		std::list<std::pair<std::string, float> >	_database;
 
-		void	file_readable(std::fstream & user_file, char *file_path);
-		bool	invalid_date(std::vector<int> &date);
-		bool	validate_date(std::string &date);
-		bool	validate_price(std::string &price);
-		float	get_price(std::vector<std::vector<std::string> > db, std::string &date);
-		std::vector<std::vector<std::string> > gen_db(std::fstream & data);
-		
+		void	_loadDatabase();
+		void	_processInput() const;
+		bool	_isValidDate(const std::string &date) const;
+		bool	_isValidValue(const std::string & valueStr, float & value) const;
+		float	_findClosestPrice(const std::string & targetDate) const;
+		static	std::string _trim(const std::string &str);
+
+		BitcoinExchange &operator=(const BitcoinExchange & rhs);
+	
 	public:
 		BitcoinExchange();
-		BitcoinExchange(char *file_path);
+		explicit BitcoinExchange(const std::string & inputFilename);
+		BitcoinExchange(const BitcoinExchange & rhs);
 		~BitcoinExchange();
-		void	read_line();
 
-
+		void	run() const;
 };
 
 #endif

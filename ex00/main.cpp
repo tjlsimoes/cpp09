@@ -1,39 +1,22 @@
 #include "BitcoinExchange.hpp"
 
-void	valid_arg(int argc)
+int main(int argc, char **argv)
 {
 	if (argc != 2)
 	{
-		std::cerr << "Invalid number of arguments" << std::endl;
-		std::exit(1);
-	}
-}
-
-int	main(int argc, char **argv)
-{
-	valid_arg(argc);
-
-	try
-	{
-		BitcoinExchange program;
-		(void )argv;
-		program.read_line();
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << "Error: Unable to generate db. Exiting." << '\n';
-		return (1);
+		std::cerr << "Usage: ./btc <input_file>" << std::endl;
+		return 1;
 	}
 
 	try
 	{
-		BitcoinExchange program_b((char *)"./user_input.csv");
-		program_b.read_line();
+		BitcoinExchange btc(argv[1]);
+		btc.run();
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Error: Unable to generate db. Exiting." << '\n';
-		return (1);
+		std::cerr << "Error: " << e.what() << std::endl;
+		return 1;
 	}
-	return (0);
+	return 0;
 }
