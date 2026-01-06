@@ -3,75 +3,68 @@
 #include <stack>
 #include <cstdlib>
 #include <exception>
+#include <sstream>
 
-bool	valid_input(std::string expr)
+bool valid_input(const std::string& expr)
 {
-	for (std::string::iterator it = expr.begin(); it != expr.end(); it++)
-	{
-		if (!std::isdigit(*it) && !std::isspace(*it)
-			&& *it != '-' && *it != '+'
-			&& *it != '/' && *it != '*')
-			{
-				std::cerr << "Error" << std::endl;
-				return (false);
-			}
-	}
-	return (true);
+    for (std::string::const_iterator it = expr.begin(); it != expr.end(); ++it)
+    {
+        if (!std::isdigit(*it) && !std::isspace(*it) &&
+            *it != '-' && *it != '+' && *it != '/' && *it != '*')
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
-std::stack<int>	calculate(std::string user_input)
+std::stack<int> calculate(const std::string& user_input)
 {
-	std::stack<int>	stack;
-	int					left;
-	int					right;
+    std::stack<int> stk;
+    std::istringstream iss(user_input);
+    std::string token;
 
-	for (std::string::iterator it = user_input.begin(); it != user_input.end(); it++)
-	{
-		// std::cout << *it << std::endl;
-		if (!std::isspace(*it))
-		{
-			if (std::isdigit(*it))
-				stack.push(*it - '0');
-			else
-			{
-				// Check for errors here?
-				right = stack.top();
-				stack.pop();
-				left = stack.top();
-				stack.pop();
-				// std::cout
-				// << "Left: " << left << "\n"
-				// << "Right: " << right
-				// << std::endl;
-				switch (*it)
-				{
-					case '+':
-						stack.push(left + right);
-						break ;
-					case '-':
-						stack.push(left - right);
-						break ;
-					case '*':
-						stack.push(left * right);
-						break ;
-					case '/':
-						if (right == 0)
-							throw std::exception();
-						stack.push(left / right);
-						break ;
-					default:
-						throw std::exception();
-				}
-			}
-		}
-	}
-	return stack;
+    while (iss >> token)
+    {
+        if (token == "+" || token == "-" || token == "*" || token == "/")
+        {
+            if (stk.size() < 2)
+                throw std::exception();
+
+            int right = stk.top(); stk.pop();
+            int left = stk.top(); stk.pop();
+
+            if (token == "+") stk.push(left + right);
+            else if (token == "-") stk.push(left - right);
+            else if (token == "*") stk.push(left * right);
+            else if (token == "/")
+            {
+                if (right == 0)
+                    throw std::exception();
+                stk.push(left / right);
+            }
+        }
+        else
+        {
+            char* end;
+            long num = std::strtol(token.c_str(), &end, 10);
+
+            if (end == token.c_str() || *end != '\0')
+                throw std::exception(); // invalid number
+
+            stk.push(static_cast<int>(num));
+        }
+    }
+    return stk;
 }
 
 int	main(int argc, char **argv)
 {
 	if (argc != 2 || !valid_input(argv[1]))
+	{
+		std::cerr << "Error" << std::endl;
 		return (1);
+	}
 	valid_input(argv[1]);
 	std::stack<int> stack;
 	try
@@ -80,7 +73,10 @@ int	main(int argc, char **argv)
 		stack = calculate(argv[1]);
 
 		if (stack.size() != 1)
+		{
 			std::cerr << "Error" << std::endl;
+			return 1;
+		}
 		std::cout << "Result: " << stack.top() << std::endl;
 	}
 	catch(...)
