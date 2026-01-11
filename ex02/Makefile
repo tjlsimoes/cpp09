@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: tjorge-l <tjorge-l@student.42.fr>          +#+  +:+       +#+         #
+#    By: tjorge-l < tjorge-l@student.42lisboa.co    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/09/08 16:39:48 by tjorge-l          #+#    #+#              #
-#    Updated: 2026/01/06 18:03:49 by tjorge-l         ###   ########.fr        #
+#    Updated: 2026/01/10 16:53:38 by tjorge-l         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,7 +45,7 @@ run: $(NAME)
 
 debug: CXXFLAGS = -g -Wall -Wextra -Werror
 debug: $(OBJS)
-	$(CC) $(CXXFLAGS) $(OBJS) -o $(NAME)
+	$(CCXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 
 rdebug: debug
 	valgrind $(VFLAGS) ./$(NAME)

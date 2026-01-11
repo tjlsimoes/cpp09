@@ -21,15 +21,15 @@ static std::string validate_arg(std::string arg)
 
 static std::string validate(int argc, char** argv)
 {
-    if (argc == 1)
-        return "No arguments were provided";
-    for (int i = 1; i < argc; i++)
-    {
-        std::string status = validate_arg(argv[i]);
-        if (status != "")
-            return status;
-    }
-    return "";
+	if (argc == 1)
+		return "No arguments were provided";
+	for (int i = 1; i < argc; i++)
+	{
+		std::string status = validate_arg(argv[i]);
+		if (status != "")
+			return status;
+	}
+	return "";
 }
 
 static std::vector<int> argv_to_vector(int argc, char** argv)
@@ -129,14 +129,13 @@ int main(int argc, char** argv)
     clock_t end_vec = clock();
     double time_elapsed_vec = static_cast<double>(end_vec - start_vec) / CLOCKS_PER_SEC;
 
-	PmergeMe::nbr_of_comps = 0;
     clock_t start_deque = clock();
     std::deque<int> deque = argv_to_deque(argc, argv);
     pm.sort_deque(deque);
     clock_t end_deque = clock();
     double time_elapsed_deque = static_cast<double>(end_deque - start_deque) / CLOCKS_PER_SEC;
 
-    if (!is_sorted(vec) || (int)deque.size() != (argc - 1) || !retained_original_values(original_values, vec))
+    if (!is_sorted(vec) || (int)vec.size() != (argc - 1) || !retained_original_values(original_values, vec))
 	{
         std::cout << "Vector was not sorted properly.\n";
 		return 1;
@@ -155,5 +154,4 @@ int main(int argc, char** argv)
     std::cout << "Time to process a range of " << vec.size()
               << " elements with std::deque:  " << std::fixed << std::setprecision(6)
               << time_elapsed_deque << "s\n";
-	std::cout << "Number of comparisons: " << PmergeMe::nbr_of_comps << '\n';
 }

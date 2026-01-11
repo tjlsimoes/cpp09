@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <deque>
 #include <vector>
+#include <cmath>
+
 class PmergeMe
 {
   public:
@@ -14,8 +16,6 @@ class PmergeMe
     void sort_vec(std::vector<int>& vec);
     void sort_deque(std::deque<int>& deque);
 
-	static int nbr_of_comps;
-
   private:
     template <typename T> void _merge_insertion_sort(T& container, int pair_level);
 
@@ -24,9 +24,8 @@ class PmergeMe
 
 long _jacobsthal_number(long n);
 
-template <typename T> bool _comp(T lv, T rv) {
-	PmergeMe::nbr_of_comps++;
-	return *lv < *rv;
+template <typename T> bool _comp(T next_pair, T this_pair) {
+	return *next_pair < *this_pair;
 }
 
 template <typename T> T next(T it, int steps)
@@ -58,8 +57,8 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
        It will go to the pend as the last pair. */
     bool is_odd = pair_units_nbr % 2 == 1;
 
-    /* It's important to caluclate the end position until which we should iterate.
-       We can have a set of values like:
+    /* It's important to calculate the end position until which the iteration should occur.
+       Arguments can make up a set of values like:
        ((1 2) (3 4)) ((3 8) (2 6)) | 0
 	   where the smallest possible element is a pair of two numbers, like (1 2) or (3 4). Those elements form pairs.
        However, there could be numbers (0 in this case) which can't even form a single element necessary to form a pair.
@@ -70,7 +69,7 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
     Iterator end = next(last, -(is_odd * pair_level));
 
     /* Swap pairs of numbers, pairs, pairs of pairs etc by the biggest pair
-       number. After each swap we recurse. */
+       number. After each swap, recurse. */
     int jump = 2 * pair_level;
     for (Iterator it = start; it != end; std::advance(it, jump))
     {
@@ -111,13 +110,12 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
     }
 
     /* Insert the pend into the main in the order determined by the
-       Jacobsthal numbers. For example: 3 2 -> 5 4 -> 11 10 9 8 7 6 -> etc.
+       Jacobsthal numbers.
        During insertion, elements from the main chain serve as an upper bound for inserting elements,
-       in order to save number of comparisons, as we know already that, for example,
-       b5 is lesser than a5, we binary search only until a5, not until the end of the container.
+       in order to save number of comparisons, as it is already known that, for example,
+       b5 is lesser than a5, binary search goes only until a5, not until the end of the container.
 
-	   We can calculate the index of the bound element. With the way I do it,
-	   the index of the bound is inserted_numbers + current_jacobsthal_number. */
+	   Index of the bound element is inserted_numbers + current_jacobsthal_number. */
     int prev_jacobsthal = _jacobsthal_number(1);
     int inserted_numbers = 0;
     for (int k = 2;; k++)
@@ -139,7 +137,7 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
             nbr_of_times--;
             pend_it = pend.erase(pend_it);
             std::advance(pend_it, -1);
-            /* Sometimes the inserted number in inserted at the exact index of where the bound should be.
+            /* Sometimes the inserted number is inserted at the exact index of where the bound should be.
 			   When this happens, it eclipses the bound of the next pend, and it does more comparisons
 			   than it should. We need to offset when this happens. */
             offset += (inserted - main.begin()) == curr_jacobsthal + inserted_numbers;
@@ -150,12 +148,9 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
 		offset = 0;
     }
 
-    /* Insert the remaining elements in the reversed order. Here we also want to
-       perform as less comparisons as possible, so we calculate the starting bound
-       to insert pend number to be the pair of the first pend number. If the first
+    /* Insert the remaining elements in the reversed order. If the first
        pend number is b8, the bound is a8, if the pend number is b7, the bound is a7 etc.
-       With the way I do it the index of bound is
-       size_of_main - size_of_pend + index_of_current_pend. */
+       Index of bound is: size_of_main - size_of_pend + index_of_current_pend. */
     for (ssize_t i = pend.size() - 1; i >= 0; i--)
     {
         typename std::vector<Iterator>::iterator curr_pend = next(pend.begin(), i);
