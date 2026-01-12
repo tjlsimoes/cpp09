@@ -12,7 +12,6 @@ PmergeMe& PmergeMe::operator=(const PmergeMe& other)
 }
 PmergeMe::~PmergeMe() {}
 
-// Gives the nth Jacobsthal number, sta
 long _jacobsthal_number(long n) {
 	if (n < 0) return 0; 
 

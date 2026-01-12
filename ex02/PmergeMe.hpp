@@ -18,7 +18,6 @@ class PmergeMe
 
   private:
     template <typename T> void _merge_insertion_sort(T& container, int pair_level);
-
     template <typename T> void _swap_pair(T it, int pair_level);
 };
 
@@ -53,23 +52,12 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
     if (pair_units_nbr < 2)
         return;
 
-    /* If there is an odd pair, we ignore it during swapping.
-       It will go to the pend as the last pair. */
     bool is_odd = pair_units_nbr % 2 == 1;
 
-    /* It's important to calculate the end position until which the iteration should occur.
-       Arguments can make up a set of values like:
-       ((1 2) (3 4)) ((3 8) (2 6)) | 0
-	   where the smallest possible element is a pair of two numbers, like (1 2) or (3 4). Those elements form pairs.
-       However, there could be numbers (0 in this case) which can't even form a single element necessary to form a pair.
-	   It's not even enough to be an odd element.
-       Those values should be ignored. */
     Iterator start = container.begin();
     Iterator last = next(container.begin(), pair_level * (pair_units_nbr));
     Iterator end = next(last, -(is_odd * pair_level));
 
-    /* Swap pairs of numbers, pairs, pairs of pairs etc by the biggest pair
-       number. After each swap, recurse. */
     int jump = 2 * pair_level;
     for (Iterator it = start; it != end; std::advance(it, jump))
     {
@@ -82,40 +70,23 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
     }
     _merge_insertion_sort(container, pair_level * 2);
 
-    /* Main contains an already sorted sequence.
-       Pend stores yet to be sorted numbers.
-       They contain iterators instead of the numbers themselves because
-       iterators + pair_level contain all the information about any stored
-       range of numbers. */
     std::vector<Iterator> main;
     std::vector<Iterator> pend;
 
-    /* Initialize the main chain with the {b1, a1}.
-	   Remember that we already know that b1 is going to be the smallest element in the main chain. */
     main.insert(main.end(), next(container.begin(), pair_level - 1));
     main.insert(main.end(), next(container.begin(), pair_level * 2 - 1));
 
-    /* Insert the rest of a's into the main chain.
-       Insert the rest of b's into the pend. */
     for (int i = 4; i <= pair_units_nbr; i += 2)
     {
         pend.insert(pend.end(), next(container.begin(), pair_level * (i - 1) - 1));
         main.insert(main.end(), next(container.begin(), pair_level * i - 1));
     }
 
-    /* Insert an odd element to the pend, if there are any. */
     if (is_odd)
     {
         pend.insert(pend.end(), next(end, pair_level - 1));
     }
 
-    /* Insert the pend into the main in the order determined by the
-       Jacobsthal numbers.
-       During insertion, elements from the main chain serve as an upper bound for inserting elements,
-       in order to save number of comparisons, as it is already known that, for example,
-       b5 is lesser than a5, binary search goes only until a5, not until the end of the container.
-
-	   Index of the bound element is inserted_numbers + current_jacobsthal_number. */
     int prev_jacobsthal = _jacobsthal_number(1);
     int inserted_numbers = 0;
     for (int k = 2;; k++)
@@ -137,9 +108,6 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
             nbr_of_times--;
             pend_it = pend.erase(pend_it);
             std::advance(pend_it, -1);
-            /* Sometimes the inserted number is inserted at the exact index of where the bound should be.
-			   When this happens, it eclipses the bound of the next pend, and it does more comparisons
-			   than it should. We need to offset when this happens. */
             offset += (inserted - main.begin()) == curr_jacobsthal + inserted_numbers;
 			bound_it = next(main.begin(), curr_jacobsthal + inserted_numbers - offset);
         }
@@ -148,9 +116,6 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
 		offset = 0;
     }
 
-    /* Insert the remaining elements in the reversed order. If the first
-       pend number is b8, the bound is a8, if the pend number is b7, the bound is a7 etc.
-       Index of bound is: size_of_main - size_of_pend + index_of_current_pend. */
     for (ssize_t i = pend.size() - 1; i >= 0; i--)
     {
         typename std::vector<Iterator>::iterator curr_pend = next(pend.begin(), i);
@@ -161,8 +126,6 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
         main.insert(idx, *curr_pend);
     }
 
-    /* Use copy vector to store all the numbers, in order not to overwrite the
-       original iterators. */
     std::vector<int> copy;
     copy.reserve(container.size());
     for (typename std::vector<Iterator>::iterator it = main.begin(); it != main.end(); it++)
@@ -175,7 +138,6 @@ template <typename T> void PmergeMe::_merge_insertion_sort(T& container, int pai
         }
     }
 
-    /* Replace values in the original container. */
     Iterator container_it = container.begin();
     std::vector<int>::iterator copy_it = copy.begin();
     while (copy_it != copy.end())
