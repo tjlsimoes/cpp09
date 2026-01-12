@@ -49,7 +49,7 @@ std::stack<int> calculate(const std::string& user_input)
             char* end;
             long num = std::strtol(token.c_str(), &end, 10);
 
-            if (end == token.c_str() || *end != '\0')
+            if (end == token.c_str() || *end != '\0' || num > 9)
                 throw std::exception(); // invalid number
 
             stk.push(static_cast<int>(num));
