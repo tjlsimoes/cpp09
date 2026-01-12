@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tjorge-l < tjorge-l@student.42lisboa.co    +#+  +:+       +#+        */
+/*   By: tjorge-l <tjorge-l@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/12 11:02:57 by tjorge-l          #+#    #+#             */
-/*   Updated: 2026/01/12 11:02:57 by tjorge-l         ###   ########.fr       */
+/*   Updated: 2026/01/12 14:35:20 by tjorge-l         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@
 static std::string validate_arg(std::string arg)
 {
     if (arg[0] == '-')
-        return "Negative numbers are not allowed";
+        return "negative number argument";
     long nbr = strtol(arg.c_str(), NULL, 10);
     if (nbr == 0 && arg != "0")
-        return "Non-number arguments not allowed";
+        return "non-number argument";
     if (nbr > INT_MAX || errno == ERANGE)
-        return "Too big arguments are not allowed";
+        return "number argument greater than INT_MAX";
     return "";
 }
 
