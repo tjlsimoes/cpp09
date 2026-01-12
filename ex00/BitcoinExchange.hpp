@@ -27,11 +27,12 @@ class BitcoinExchange
 		std::string									_inputFilename;
 		std::list<std::pair<std::string, float> >	_database;
 
-		void	_loadDatabase();
-		void	_processInput() const;
-		bool	_isValidDate(const std::string &date) const;
-		bool	_isValidValue(const std::string & valueStr, float & value) const;
-		float	_findClosestPrice(const std::string & targetDate) const;
+		void		_loadDatabase();
+		void		_processInput() const;
+		bool		_isValidDate(const std::string &date) const;
+		bool		_isValidValue(const std::string & valueStr, float & value) const;
+		float		_findClosestPrice(const std::string & targetDate) const;
+		std::string	_formatDate(const std::string &date) const;
 		static	std::string _trim(const std::string &str);
 
 		BitcoinExchange &operator=(const BitcoinExchange & rhs);

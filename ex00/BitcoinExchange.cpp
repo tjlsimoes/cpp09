@@ -86,9 +86,33 @@ bool	BitcoinExchange::_isValidDate(const std::string &date) const
 		return false;
 	if (month == 2 && day > 29)
 		return false;
-
 	(void)year;
 	return true;
+}
+
+std::string	BitcoinExchange::_formatDate(const std::string &date) const
+{
+	std::stringstream ss(date);
+	int year, month, day;
+	char sep1, sep2;
+
+	if (!(ss >> year >> sep1 >> month >> sep2 >> day)
+		|| sep1 != '-' || sep2 != '-'
+		|| !ss.eof())
+		return "";
+	std::ostringstream ostream;
+	ostream << year << "-";
+	if (month < 10)
+		ostream << "0" << month;
+	else
+		ostream << month;
+	ostream << "-";
+	if (day < 10)
+		ostream << "0" << day;
+	else
+		ostream << day;
+	std::string newDate = ostream.str();
+	return newDate;
 }
 
 bool	BitcoinExchange::_isValidValue(const std::string & valueStr, float &value) const
@@ -170,7 +194,8 @@ void	BitcoinExchange::_processInput() const
 		if (!_isValidValue(valueStr, value))
 			continue ;
 
-		float rate = _findClosestPrice(dateStr);
+		std::string dateFormatted = _formatDate(dateStr);
+		float rate = _findClosestPrice(dateFormatted);
 		std::cout << dateStr << " => " << value << " = " << (value * rate) << std::endl;
 	}
 	input.close();
