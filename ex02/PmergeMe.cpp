@@ -45,23 +45,21 @@ void PmergeMe::sort_deque(std::deque<int>& deque)
 
 void	PmergeMe::merge_insertion_sort_vec(std::vector<int> &container, int pair_level)
 {
-typedef typename std::vector<int>::iterator Iterator;
-
     int pair_units_nbr = container.size() / pair_level;
     if (pair_units_nbr < 2)
         return;
 
     bool is_odd = pair_units_nbr % 2 == 1;
 
-    Iterator start = container.begin();
-    Iterator last = next(container.begin(), pair_level * (pair_units_nbr));
-    Iterator end = next(last, -(is_odd * pair_level));
+    std::vector<int>::iterator start = container.begin();
+    std::vector<int>::iterator last = next(container.begin(), pair_level * (pair_units_nbr));
+    std::vector<int>::iterator end = next(last, -(is_odd * pair_level));
 
     int jump = 2 * pair_level;
-    for (Iterator it = start; it != end; std::advance(it, jump))
+    for (std::vector<int>::iterator it = start; it != end; std::advance(it, jump))
     {
-        Iterator this_pair = next(it, pair_level - 1);
-        Iterator next_pair = next(it, pair_level * 2 - 1);
+        std::vector<int>::iterator this_pair = next(it, pair_level - 1);
+        std::vector<int>::iterator next_pair = next(it, pair_level * 2 - 1);
         if (_comp(next_pair, this_pair))
         {
             swap_pair(this_pair, pair_level);
@@ -69,8 +67,8 @@ typedef typename std::vector<int>::iterator Iterator;
     }
     merge_insertion_sort_vec(container, pair_level * 2);
 
-    std::vector<Iterator> main;
-    std::vector<Iterator> pend;
+    std::vector<std::vector<int>::iterator> main;
+    std::vector<std::vector<int>::iterator> pend;
 
     main.insert(main.end(), next(container.begin(), pair_level - 1));
     main.insert(main.end(), next(container.begin(), pair_level * 2 - 1));
@@ -96,14 +94,14 @@ typedef typename std::vector<int>::iterator Iterator;
         if (jacobsthal_diff > static_cast<int>(pend.size()))
             break;
         int nbr_of_times = jacobsthal_diff;
-        typename std::vector<Iterator>::iterator pend_it = next(pend.begin(), jacobsthal_diff - 1);
-        typename std::vector<Iterator>::iterator bound_it =
+        std::vector<std::vector<int>::iterator>::iterator pend_it = next(pend.begin(), jacobsthal_diff - 1);
+        std::vector<std::vector<int>::iterator>::iterator bound_it =
             next(main.begin(), curr_jacobsthal + inserted_numbers);
         while (nbr_of_times)
         {
-            typename std::vector<Iterator>::iterator idx =
-                std::upper_bound(main.begin(), bound_it, *pend_it, _comp<Iterator>);
-            typename std::vector<Iterator>::iterator inserted = main.insert(idx, *pend_it);
+            std::vector<std::vector<int>::iterator>::iterator idx =
+                std::upper_bound(main.begin(), bound_it, *pend_it, _comp<std::vector<int>::iterator>);
+            std::vector<std::vector<int>::iterator>::iterator inserted = main.insert(idx, *pend_it);
             nbr_of_times--;
             pend_it = pend.erase(pend_it);
             std::advance(pend_it, -1);
@@ -117,27 +115,27 @@ typedef typename std::vector<int>::iterator Iterator;
 
     for (ssize_t i = pend.size() - 1; i >= 0; i--)
     {
-        typename std::vector<Iterator>::iterator curr_pend = next(pend.begin(), i);
-        typename std::vector<Iterator>::iterator curr_bound =
+        std::vector<std::vector<int>::iterator>::iterator curr_pend = next(pend.begin(), i);
+        std::vector<std::vector<int>::iterator>::iterator curr_bound =
             next(main.begin(), main.size() - pend.size() + i + is_odd);
-        typename std::vector<Iterator>::iterator idx =
-            std::upper_bound(main.begin(), curr_bound, *curr_pend, _comp<Iterator>);
+        std::vector<std::vector<int>::iterator>::iterator idx =
+            std::upper_bound(main.begin(), curr_bound, *curr_pend, _comp<std::vector<int>::iterator>);
         main.insert(idx, *curr_pend);
     }
 
     std::vector<int> copy;
     copy.reserve(container.size());
-    for (typename std::vector<Iterator>::iterator it = main.begin(); it != main.end(); it++)
+    for (std::vector<std::vector<int>::iterator>::iterator it = main.begin(); it != main.end(); it++)
     {
         for (int i = 0; i < pair_level; i++)
         {
-            Iterator pair_start = *it;
+            std::vector<int>::iterator pair_start = *it;
             std::advance(pair_start, -pair_level + i + 1);
             copy.insert(copy.end(), *pair_start);
         }
     }
 
-    Iterator container_it = container.begin();
+    std::vector<int>::iterator container_it = container.begin();
     std::vector<int>::iterator copy_it = copy.begin();
     while (copy_it != copy.end())
     {
@@ -149,23 +147,21 @@ typedef typename std::vector<int>::iterator Iterator;
 
 void	PmergeMe::merge_insertion_sort_deq(std::deque<int> &container, int pair_level)
 {
-typedef typename std::deque<int>::iterator Iterator;
-
     int pair_units_nbr = container.size() / pair_level;
     if (pair_units_nbr < 2)
         return;
 
     bool is_odd = pair_units_nbr % 2 == 1;
 
-    Iterator start = container.begin();
-    Iterator last = next(container.begin(), pair_level * (pair_units_nbr));
-    Iterator end = next(last, -(is_odd * pair_level));
+    std::deque<int>::iterator start = container.begin();
+    std::deque<int>::iterator last = next(container.begin(), pair_level * (pair_units_nbr));
+    std::deque<int>::iterator end = next(last, -(is_odd * pair_level));
 
     int jump = 2 * pair_level;
-    for (Iterator it = start; it != end; std::advance(it, jump))
+    for (std::deque<int>::iterator it = start; it != end; std::advance(it, jump))
     {
-        Iterator this_pair = next(it, pair_level - 1);
-        Iterator next_pair = next(it, pair_level * 2 - 1);
+        std::deque<int>::iterator this_pair = next(it, pair_level - 1);
+        std::deque<int>::iterator next_pair = next(it, pair_level * 2 - 1);
         if (_comp(next_pair, this_pair))
         {
             swap_pair(this_pair, pair_level);
@@ -173,8 +169,8 @@ typedef typename std::deque<int>::iterator Iterator;
     }
     merge_insertion_sort_deq(container, pair_level * 2);
 
-    std::deque<Iterator> main;
-    std::deque<Iterator> pend;
+    std::deque<std::deque<int>::iterator> main;
+    std::deque<std::deque<int>::iterator> pend;
 
     main.insert(main.end(), next(container.begin(), pair_level - 1));
     main.insert(main.end(), next(container.begin(), pair_level * 2 - 1));
@@ -200,14 +196,14 @@ typedef typename std::deque<int>::iterator Iterator;
         if (jacobsthal_diff > static_cast<int>(pend.size()))
             break;
         int nbr_of_times = jacobsthal_diff;
-        typename std::deque<Iterator>::iterator pend_it = next(pend.begin(), jacobsthal_diff - 1);
-        typename std::deque<Iterator>::iterator bound_it =
+        std::deque<std::deque<int>::iterator>::iterator pend_it = next(pend.begin(), jacobsthal_diff - 1);
+        std::deque<std::deque<int>::iterator>::iterator bound_it =
             next(main.begin(), curr_jacobsthal + inserted_numbers);
         while (nbr_of_times)
         {
-            typename std::deque<Iterator>::iterator idx =
-                std::upper_bound(main.begin(), bound_it, *pend_it, _comp<Iterator>);
-            typename std::deque<Iterator>::iterator inserted = main.insert(idx, *pend_it);
+            std::deque<std::deque<int>::iterator>::iterator idx =
+                std::upper_bound(main.begin(), bound_it, *pend_it, _comp<std::deque<int>::iterator>);
+            std::deque<std::deque<int>::iterator>::iterator inserted = main.insert(idx, *pend_it);
             nbr_of_times--;
             pend_it = pend.erase(pend_it);
             std::advance(pend_it, -1);
@@ -221,26 +217,26 @@ typedef typename std::deque<int>::iterator Iterator;
 
     for (ssize_t i = pend.size() - 1; i >= 0; i--)
     {
-        typename std::deque<Iterator>::iterator curr_pend = next(pend.begin(), i);
-        typename std::deque<Iterator>::iterator curr_bound =
+        std::deque<std::deque<int>::iterator>::iterator curr_pend = next(pend.begin(), i);
+        std::deque<std::deque<int>::iterator>::iterator curr_bound =
             next(main.begin(), main.size() - pend.size() + i + is_odd);
-        typename std::deque<Iterator>::iterator idx =
-            std::upper_bound(main.begin(), curr_bound, *curr_pend, _comp<Iterator>);
+        std::deque<std::deque<int>::iterator>::iterator idx =
+            std::upper_bound(main.begin(), curr_bound, *curr_pend, _comp<std::deque<int>::iterator>);
         main.insert(idx, *curr_pend);
     }
 
     std::deque<int> copy;
-    for (typename std::deque<Iterator>::iterator it = main.begin(); it != main.end(); it++)
+    for (std::deque<std::deque<int>::iterator>::iterator it = main.begin(); it != main.end(); it++)
     {
         for (int i = 0; i < pair_level; i++)
         {
-            Iterator pair_start = *it;
+            std::deque<int>::iterator pair_start = *it;
             std::advance(pair_start, -pair_level + i + 1);
             copy.insert(copy.end(), *pair_start);
         }
     }
 
-    Iterator container_it = container.begin();
+    std::deque<int>::iterator container_it = container.begin();
     std::deque<int>::iterator copy_it = copy.begin();
     while (copy_it != copy.end())
     {
