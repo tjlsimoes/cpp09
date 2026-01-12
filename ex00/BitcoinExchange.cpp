@@ -23,6 +23,16 @@ BitcoinExchange::BitcoinExchange(const std::string & inputFilename) : _inputFile
 BitcoinExchange::BitcoinExchange(const BitcoinExchange & other) : _inputFilename(other._inputFilename), _database(other._database)
 {}
 
+BitcoinExchange &BitcoinExchange::operator=(const BitcoinExchange & rhs)
+{
+	if (this != &rhs)
+	{
+		_inputFilename = rhs._inputFilename;
+		_database = rhs._database;
+	}
+	return *this;
+}
+
 BitcoinExchange::~BitcoinExchange()
 {}
 

@@ -22,8 +22,14 @@ int main(int argc, char **argv)
 
 	try
 	{
-		BitcoinExchange btc(argv[1]);
-		btc.run();
+		BitcoinExchange *btc = new BitcoinExchange(argv[1]);
+		btc->run();
+
+		delete btc;
+		// BitcoinExchange *other = new BitcoinExchange(*btc);
+		// delete btc;
+		// other->run();
+		// delete other;
 	}
 	catch (const std::exception& e)
 	{
