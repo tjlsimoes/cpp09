@@ -67,7 +67,7 @@ bool	BitcoinExchange::_isValidDate(const std::string &date) const
 		|| !ss.eof())
 		return false;
 
-	if (year < 1 || month < 1 || month > 12 || day < 1 || day > 31)
+	if (year < 0 || month < 1 || month > 12 || day < 1 || day > 31)
 		return false;
 	
 	if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
@@ -110,7 +110,11 @@ float	BitcoinExchange::_findClosestPrice(const std::string & targetDate) const
 	for (it = _database.begin(); it != _database.end(); it++)
 	{
 		if (it->first > targetDate)
+		{
+			if (it == _database.begin())
+				best = it;
 			break ;
+		}
 		best = it;
 	}
 	return best->second;	
